@@ -1,3 +1,15 @@
+*.pyc
+*.Rcheck/
+*.orig
+enmity*.tar.gz
+.DS_Store
+Rd2.pdf
+assets/
+inst/doc/*.html
+*.log
+.Rproj.user
+*.Rproj
+
 # History files
 .Rhistory
 .Rapp.history
