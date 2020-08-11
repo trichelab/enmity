@@ -1,21 +1,5 @@
-library(R.utils) 
-library(HDF5Array)
-library(Rsamtools)
-library(compartmap) 
-library(DelayedArray)
-library(BiocParallel)
-library(GenomeInfoDb)
-library(GenomicRanges)
-library(SummarizedExperiment)
-# library(SingleCellMultiModal) 
-
-# utility functions
-source("scanScNMT.R") 
-source("scNMTtoGR.R") 
-source("mergeScNMT.R") 
-
-# currently superfluous
-source("updateSEwithGR.R") 
+# BiocManager::install("trichelab/enmity")
+library(enmity) 
 
 # we don't typically test on HPC 
 host <- system2("hostname", stdout = T)
@@ -41,10 +25,9 @@ setMethod("getBeta", signature(object = "SummarizedExperiment"),
           })
 
 # for now: 
-backend <- "serial"
-# backend <- "parallel"
-inmem <- TRUE 
-# to get a result!
+strategy <- "parallel"
+backend <- "inmemory"
+# can do EITHER HDF5, OR parallel, but not both, in the large (120 runs) 
 
 tsvs <- list.files(patt="^GS.*_CpG\\-met_processed\\.tsv(\\.gz)?$")
 tsvs <- unique(sub("\\.gz", "", tsvs))
@@ -62,7 +45,7 @@ if (testing) {
   stopifnot(!all(is.na(getBeta(inmemSE))))
   message("OK.\n\n")
 
-  message("Testing multicore HDF5... ")
+  message("Testing multicore HDF5... (Note: this does not scale up properly.)")
   hdf5SE <- mergeScNMT(tsvs, saveGR=FALSE, HDF5=TRUE, BPPARAM=MulticoreParam())
   stopifnot(!all(is.na(getBeta(hdf5SE))))
   message("OK.\n\n")
@@ -78,13 +61,22 @@ if (testing) {
   }
 
   # for stability purposes 
-  BPPARAM <- switch(backend,
+  HDF5 <- FALSE 
+  if (backend == "HDF5") {
+    HDF5 <- TRUE
+    strategy <- "serial"
+  }
+  BPPARAM <- switch(strategy,
                     `serial`=SerialParam(), 
                     `parallel`=MulticoreParam())
-  se <- mergeScNMT(tsvs, loci=loci, saveSE=TRUE, HDF5=!inmem, BPPARAM=BPPARAM)
-  # message("Saving merged scNMT methylation data... ", appendLF=FALSE)
-  # saveHDF5SummarizedExperiment(se, dir="scNMT_meth", replace=TRUE)
-  # message("done.")
+  se <- mergeScNMT(tsvs, loci=loci, HDF5=HDF5, BPPARAM=BPPARAM)
+  # Passively saved as HDF5 if HDF5 == TRUE 
+  
+  if (backend == "inmemory") {
+    message("Saving merged scNMT methylation data as HDF5... ", appendLF=FALSE)
+    se <- saveHDF5SummarizedExperiment(se, dir="scNMT_meth", replace=TRUE)
+    message("done.")
+  }
 
 }
 
