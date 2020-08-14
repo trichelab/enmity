@@ -2,7 +2,7 @@
 % Please edit documentation in R/mergeScNMT.R
 \name{mergeScNMT}
 \alias{mergeScNMT}
-\title{merge a bunch of scNMT raw methylation files (chrom, start, \%meth format)}
+\title{merge a bunch of scNMT raw (met|acc) files (chrom, start, \%meth/\%acc format)}
 \usage{
 mergeScNMT(
   tsvs,
@@ -11,12 +11,13 @@ mergeScNMT(
   saveGR = TRUE,
   saveSE = FALSE,
   HDF5 = FALSE,
-  dir = "scNMT_meth",
+  what = c("meth", "acc"),
+  dir = "scNMT",
   BPPARAM = SerialParam()
 )
 }
 \arguments{
-\item{tsvs}{scNMT raw methylation files}
+\item{tsvs}{scNMT raw CpG (methylation) or GpC (accessibility) files}
 
 \item{gen}{what genome they correspond to (default is GRCm38)}
 
@@ -28,7 +29,9 @@ mergeScNMT(
 
 \item{HDF5}{use an HDF5-backed SummarizedExperiment for loading? (FALSE)}
 
-\item{dir}{if using HDF5 and/or saving loci, path to use ("scNMT_meth")}
+\item{what}{methylation ("meth") or accessibility ("acc") data? ("meth")}
+
+\item{dir}{if using HDF5 and/or saving loci, path to use ("scNMT_"what)}
 
 \item{BPPARAM}{BiocParallelParam object (default BiocParallel::SerialParam())}
 }
