@@ -19,7 +19,6 @@
 #' @import BiocParallel 
 #' @import DelayedArray
 #' @import HDF5Array
-#' @import Matrix
 #' @import bsseq
 #' 
 #' @export
