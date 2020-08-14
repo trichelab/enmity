@@ -47,7 +47,7 @@ meth_tsvs <- list.files(patt="^GS.*_CpG\\-met_processed\\.tsv(\\.gz)?$")
 meth_tsvs <- unique(sub("\\.gz", "", meth_tsvs))
 
 acc_tsvs <- list.files(patt="^GS.*_GpC\\-acc_processed\\.tsv(\\.gz)?$")
-meth_tsvs <- unique(sub("\\.gz", "", acc_tsvs))
+acc_tsvs <- unique(sub("\\.gz", "", acc_tsvs))
 
 if (testing) {
 
