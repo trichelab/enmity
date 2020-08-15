@@ -43,7 +43,7 @@ if (Sys.getenv("SINGULARITY_NAME") == "") {
   message("OK.\n\n")
 } else {
   # as an alternative, just use saveHDF5SummarizedExperiment on in-memory SEs 
-  hdf5SE <- saveHDF5SummarizedExperiment(inmemSE, dir="scNMT_meth")
+  hdf5SE <- saveHDF5SummarizedExperiment(inmemSE, dir="scNMT_meth",replace=TRUE)
 }
 
 message("Testing serial accessibility merge... ")
@@ -68,7 +68,7 @@ if (Sys.getenv("SINGULARITY_NAME") == "") {
   message("OK.\n\n")
 } else { 
   # as an alternative, just use saveHDF5SummarizedExperiment on in-memory SEs 
-  acc_hdf5 <- saveHDF5SummarizedExperiment(acc_inmem, dir="scNMT_acc")
+  acc_hdf5 <- saveHDF5SummarizedExperiment(acc_inmem, dir="scNMT_acc",replace=T)
 }
 
 # load RNA -- this is a lot easier than the CpG and GpC data
