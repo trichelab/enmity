@@ -18,8 +18,8 @@ scanScNMT <- function(tsv, dry=FALSE, gen="GRCm38", ...) {
 
   # tidy up the input filename 
   tsv <- sub("(\\.gz)+$", "", tsv)
-  if (!grepl("CpG-met_processed.tsv", fixed=TRUE, tsv)) {
-    warning("This does not look like an scNMT CpG tsv file. It may fail.")
+  if (!grepl("(CpG|GpC)\\-(met|acc)_processed.tsv", tsv)) {
+    warning("This does not look like an scNMT CpG or GpC file. It may fail.")
   }
 
   # ensure it is bgzipped 

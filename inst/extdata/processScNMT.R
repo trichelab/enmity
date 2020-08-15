@@ -42,7 +42,7 @@ acc_se <- mergeScNMT(acc_tsv, saveGR=FALSE, what="acc")
 stopifnot(!all(is.na(getAcc(acc_se))))
 message("OK.\n\n")
   
-message("Testing multicore... ")
+message("Testing multicore accessibility merge... ")
 acc_inmem <- mergeScNMT(acc_tsv, saveGR=FALSE, what="acc", BPPARAM=BPMULTI)
 stopifnot(!all(is.na(getAcc(acc_inmem))))
 message("OK.\n\n")
@@ -51,13 +51,13 @@ message("Testing equivalence...")
 stopifnot(identical(acc_se, acc_inmem))
 message("OK.\n\n")
   
-message("Testing HDF5... ")
+message("Testing HDF5 accessibility merge... ")
 acc_hdf5 <- mergeScNMT(acc_tsv, saveGR=FALSE, what="acc", HDF5=TRUE)
 stopifnot(!all(is.na(getAcc(acc_hdf5))))
 message("OK.\n\n")
 
 # load RNA -- this is a lot easier than the CpG and GpC data
-message("Testing RNA...")
+message("Testing RNA load...") # wrap this 
 rna <- read.table(rna_tab, header=TRUE, row=1)
 head(rna)
 
