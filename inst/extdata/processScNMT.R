@@ -98,7 +98,7 @@ columns <- c("gene_id",
              "transcript_biotype")
 mcols(rr) <- mcols(rr)[, columns]
 rr <- split(rr, rr$gene_id)[rownames(rna)]
-cdata <- DataFrame(cell=colnames(rna))
+cdata <- DataFrame(sample=colnames(rna))
 library(SummarizedExperiment)
 rna_se <- SummarizedExperiment(assays=list(counts=rna), 
                                rowRanges=rr,
