@@ -15,6 +15,7 @@ message("Testing scanScNMT...")
 scanScNMT(meth_tsv[1]) # test scanScNMT function
 
 # for serial vs parallel:
+library(BiocParallel)
 BPMULTI <- MulticoreParam()
 
 message("Testing serial meth merge... ")
