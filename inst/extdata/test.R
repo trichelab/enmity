@@ -106,46 +106,76 @@ rna_se <- SummarizedExperiment(assays=list(counts=rna),
 show(rna_se)
 
 # save it as an HDF5-backed SummarizedExperiment
-rna_hdf5 <- saveHDF5SummarizedExperiment(rna_se, dir="scNMT_rna")
+rna_hdf5 <- saveHDF5SummarizedExperiment(rna_se, dir="scNMT_rna", replace=TRUE)
 
-# wrap up a MultiAssayExperiment
-library(MultiAssayExperiment) 
-assayList <- list(meth = hdf5SE, 
-                  acc = acc_hdf5,
-                  rna = rna_hdf5)
-ExpList <- ExperimentList(assayList)
-MAE <- MultiAssayExperiment(experiments = ExpList,
-                            colData = colDat, 
-                            sampleMap = sampMap)
+# optional: MultiAssayExperiment testing
+if (!exists("MAEtest")) MAEtest <- FALSE
 
-# save that 
-saveRDS(MAE, file="MAE.rds") 
-
-# load it 
-MAE1 <- readRDS("MAE.rds") 
-
-# test it 
-stopifnot(identical(MAE, MAE1))
-
-# optional: relocate an HDF5-backed version to test Marcel's debugging?
-MAEtest <- FALSE
+# relocate an HDF5-backed version to test Marcel's relocatable MAEs?
 if (MAEtest) {
+
+  # wrap up a MultiAssayExperiment
+  library(MultiAssayExperiment) 
+  assayList <- list(meth = hdf5SE, 
+                    acc = acc_hdf5,
+                    rna = rna_hdf5)
+  ExpList <- ExperimentList(assayList)
+  commonColDat <- Reduce(intersect, 
+                         lapply(ExpList, function(x) names(colData(x))))
+  colDat <- DataFrame(do.call(cbind, 
+                              lapply(ExpList, 
+                                     function(x) colData(x)[[commonColDat]])))
+
+  # the idiot's version of gapped LCS:
+  LCS <- function(..., sep="") {
+    paste(Reduce(intersect, strsplit(unlist(...), sep)), collapse=sep)
+  }
+  rownames(colDat) <- apply(colDat, 1, LCS)
+
+  # sample mappings: 
+  maplist <- apply(colDat, 2, 
+                   function(x) DataFrame(primary=names(x), colname=x))
+  sampMap <- listToMap(maplist)
+
+  # disambiguate the column names for the main MAE:
+  names(colDat) <- paste(commonColDat, names(colDat), sep=".") 
+
+  # assemble the MultiAssayExperiment:
+  scNMT <- MultiAssayExperiment(experiments = ExpList,
+                                colData = colDat, 
+                                sampleMap = sampMap)
+
+  # save that 
+  saveRDS(scNMT, file="scNMT.rds") 
+
+  # load it 
+  scNMT0 <- readRDS("scNMT.rds") 
+
+  # test it 
+  stopifnot(identical(scNMT, scNMT0))
+
+  # move it around
   tmpbase <- basename(scratch)
   newtmp <- sub(tmpbase, reverse(tmpbase), scratch)
   dir.create(newtmp)
   newAssayList <- list() 
-  for (hdf5dir %in% c("scNMT_meth", "scNMT_acc", "scNMT_rna")) {
+  for (hdf5dir in c("scNMT_meth", "scNMT_acc", "scNMT_rna")) {
     asy <- sub("scNMT_", "", hdf5dir)
     asypath <- file.path(newtmp, hdf5dir)
     dir.create(asypath)
-    for (hdf5file %in% c("assays.h5", "se.rds")) {
+    for (hdf5file in c("assays.h5", "se.rds")) {
       file.copy(from=file.path(scratch, hdf5dir, hdf5file),
                 to=file.path(newtmp, hdf5dir, hdf5file))
     }
     newAssayList[[asy]] <- loadHDF5SummarizedExperiment(asypath)
   }
-  newExpList <- ExperimentList(newAssayList)
 
+  newExpList <- ExperimentList(newAssayList)
+  scNMT1 <- MultiAssayExperiment(experiments = newExpList,
+                                 colData = colDat, 
+                                 sampleMap = sampMap)
+  stopifnot(!identical(scNMT0, scNMT1)) # better not be!
+   
 }
 
 # return to the original location (prior to using a temporary directory)
