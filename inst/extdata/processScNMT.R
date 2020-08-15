@@ -1,6 +1,9 @@
 # BiocManager::install("trichelab/enmity")
 library(enmity) 
 enmity_ext <- system.file("extdata", package="enmity")
+scratch <- tempdir()
+oldwd <- getwd() 
+setwd(scratch)
 
 # catalog the extdata files for testing 
 meth_tsv <- file.path(enmity_ext, list.files(enmity_ext, patt="CpG.*.gz$"))
@@ -83,7 +86,49 @@ cdata <- DataFrame(cell=colnames(rna))
 rna_se <- SummarizedExperiment(assays=list(counts=rna), 
                                rowRanges=rr,
                                colData=cdata)
+# save it as an HDF5-backed SummarizedExperiment
 show(rna_se)
+rna_hdf5 <- saveHDF5SummarizedExperiment(rna_se, dir="scNMT_rna")
 
 # wrap up a MultiAssayExperiment
 library(MultiAssayExperiment) 
+assayList <- list(meth = hdf5SE, 
+                  acc = acc_hdf5,
+                  rna = rna_hdf5)
+ExpList <- ExperimentList(assayList)
+MAE <- MultiAssayExperiment(experiments = ExpList,
+                            colData = colDat, 
+                            sampleMap = sampMap)
+
+# save that 
+saveRDS(MAE, file="MAE.rds") 
+
+# load it 
+MAE1 <- readRDS("MAE.rds") 
+
+# test it 
+stopifnot(identical(MAE, MAE1))
+
+# optional: relocate an HDF5-backed version to test Marcel's debugging?
+MAEtest <- FALSE
+if (MAEtest) {
+  tmpbase <- basename(scratch)
+  newtmp <- sub(tmpbase, reverse(tmpbase), scratch)
+  dir.create(newtmp)
+  newAssayList <- list() 
+  for (hdf5dir %in% c("scNMT_meth", "scNMT_acc", "scNMT_rna")) {
+    asy <- sub("scNMT_", "", hdf5dir)
+    asypath <- file.path(newtmp, hdf5dir)
+    dir.create(asypath)
+    for (hdf5file %in% c("assays.h5", "se.rds")) {
+      file.copy(from=file.path(scratch, hdf5dir, hdf5file),
+                to=file.path(newtmp, hdf5dir, hdf5file))
+    }
+    newAssayList[[asy]] <- loadHDF5SummarizedExperiment(asypath)
+  }
+  newExpList <- ExperimentList(newAssayList)
+
+}
+
+# return to the original location (prior to using a temporary directory)
+setwd(oldwd)
