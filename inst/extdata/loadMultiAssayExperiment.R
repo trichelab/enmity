@@ -16,11 +16,6 @@ colDat <- DataFrame(do.call(cbind,
                             lapply(ExpList, 
                                    function(x) colData(x)[[commonColDat]])))
 
-# the idiot's version of gapped LCS; should make this a function & document it
-LCS <- function(...) {
-  paste(Reduce(intersect, strsplit(unlist(...), "")), collapse="")
-}
-
 # this gets tricky because there are 8 misses
 rownames(colDat) <- apply(colDat, 1, LCS)
 
