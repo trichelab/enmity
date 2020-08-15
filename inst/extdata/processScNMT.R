@@ -1,5 +1,8 @@
 # BiocManager::install("trichelab/enmity")
 library(enmity) 
+library(HDF5Array) # for explicit HDF5 loads/saves
+
+# where the sample data is kept:
 enmity_ext <- system.file("extdata", package="enmity")
 scratch <- tempdir()
 oldwd <- getwd() 
@@ -32,10 +35,16 @@ message("Testing equivalence...")
 stopifnot(identical(se, inmemSE))
 message("OK.\n\n")
 
-message("Testing HDF5 meth merge... ")
-hdf5SE <- mergeScNMT(meth_tsv, saveGR=FALSE, HDF5=TRUE)
-stopifnot(!all(is.na(getBeta(hdf5SE))))
-message("OK.\n\n")
+# not sure why, but this crashes Singularity
+if (Sys.getenv("SINGULARITY_NAME") == "") {
+  message("Testing HDF5 meth merge... ")
+  hdf5SE <- mergeScNMT(meth_tsv, saveGR=FALSE, HDF5=TRUE)
+  stopifnot(!all(is.na(getBeta(hdf5SE))))
+  message("OK.\n\n")
+} else {
+  # as an alternative, just use saveHDF5SummarizedExperiment on in-memory SEs 
+  hdf5SE <- saveHDF5SummarizedExperiment(inmemSE, dir="scNMT_meth")
+}
 
 message("Testing serial accessibility merge... ")
 acc_se <- mergeScNMT(acc_tsv, saveGR=FALSE, what="acc")
@@ -50,14 +59,20 @@ message("OK.\n\n")
 message("Testing equivalence...") 
 stopifnot(identical(acc_se, acc_inmem))
 message("OK.\n\n")
-  
-message("Testing HDF5 accessibility merge... ")
-acc_hdf5 <- mergeScNMT(acc_tsv, saveGR=FALSE, what="acc", HDF5=TRUE)
-stopifnot(!all(is.na(getAcc(acc_hdf5))))
-message("OK.\n\n")
+
+# this crashes singularity otherwise 
+if (Sys.getenv("SINGULARITY_NAME") == "") {
+  message("Testing HDF5 accessibility merge... ")
+  acc_hdf5 <- mergeScNMT(acc_tsv, saveGR=FALSE, what="acc", HDF5=TRUE)
+  stopifnot(!all(is.na(getAcc(acc_hdf5))))
+  message("OK.\n\n")
+} else { 
+  # as an alternative, just use saveHDF5SummarizedExperiment on in-memory SEs 
+  acc_hdf5 <- saveHDF5SummarizedExperiment(acc_inmem, dir="scNMT_acc")
+}
 
 # load RNA -- this is a lot easier than the CpG and GpC data
-message("Testing RNA load...") # wrap this 
+message("Testing RNA load...") # wrap this anyway, though
 rna <- read.table(rna_tab, header=TRUE, row=1)
 head(rna)
 
@@ -84,11 +99,13 @@ columns <- c("gene_id",
 mcols(rr) <- mcols(rr)[, columns]
 rr <- split(rr, rr$gene_id)[rownames(rna)]
 cdata <- DataFrame(cell=colnames(rna))
+library(SummarizedExperiment)
 rna_se <- SummarizedExperiment(assays=list(counts=rna), 
                                rowRanges=rr,
                                colData=cdata)
-# save it as an HDF5-backed SummarizedExperiment
 show(rna_se)
+
+# save it as an HDF5-backed SummarizedExperiment
 rna_hdf5 <- saveHDF5SummarizedExperiment(rna_se, dir="scNMT_rna")
 
 # wrap up a MultiAssayExperiment

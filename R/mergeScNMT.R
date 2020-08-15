@@ -55,7 +55,7 @@ mergeScNMT <- function(tsvs, gen="GRCm38", loci=NULL, saveGR=TRUE, saveSE=FALSE,
   }
 
   # now give them simplified column names
-  tsvs <- sub(".gz", "", fixed=TRUE, tsvs)
+  tsvs <- basename(sub(".gz", "", fixed=TRUE, tsvs)) 
   tsvpatt <- switch(what,
                     "acc"="_GpC-acc_processed.tsv", 
                     "meth"="_CpG-met_processed.tsv")
