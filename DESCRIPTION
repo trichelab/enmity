@@ -2,7 +2,7 @@ Package: enmity
 Type: Package
 Title: load scNMT data and test HDF5/DelayedArray/restfulSE behavior
 Description: A collection of functions to ease loading of nonstandard scNMT data
-Version: 0.1.12
+Version: 0.1.13
 Date: 2020-08-15
 Authors@R: person("Tim", "Triche, Jr.", role=c("aut", "cre"), email="trichelab@gmail.com")
 Author: Tim Triche, Jr. [aut, cre]

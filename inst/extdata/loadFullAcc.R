@@ -6,6 +6,6 @@ BPMULTI <- MulticoreParam()
 
 # catalog the extdata files for testing 
 acc_tsv <- list.files(patt="GpC.*.gz$")
-acc_se <- mergeScNMT(acc_tsv, saveGR=FALSE, BPPARAM=BPMULTI)
+acc_se <- mergeScNMT(acc_tsv, what="acc", BPPARAM=BPMULTI)
 stopifnot(!all(is.na(getAcc(acc_se))))
 acc_hdf5 <- saveHDF5SummarizedExperiment(acc_se, dir="scNMT_acc", replace=TRUE)
