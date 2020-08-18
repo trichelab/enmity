@@ -18,7 +18,6 @@ Imports:
     GenomeInfoDb,
     GenomicRanges,
     HDF5Array,
-    R.utils,
     Rsamtools,
     SummarizedExperiment,
     S4Vectors,
