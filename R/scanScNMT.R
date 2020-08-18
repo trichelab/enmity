@@ -17,6 +17,8 @@
 #' @export
 scanScNMT <- function(tsv, dry=FALSE, gen="GRCm38", seqinf=FALSE, verbose=FALSE, ...) {
 
+  if (verbose) message("Scanning ", tsv, "...")
+  
   # tidy up the input filename 
   tsv <- sub("(\\.gz)+$", "", tsv)
   if (!grepl("(CpG|GpC)\\-(met|acc)_processed.tsv", tsv)) {
