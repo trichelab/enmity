@@ -1,8 +1,9 @@
 #' import an scNMT raw methylation file (chrom, start, %meth)
 #'
 #' @param tsv     a tsv or tsv.gz filename (will figure out what to do with it)
-#' @param gen     what genome the file corresponds to (default is GRCm38)
 #' @param dry     dry run? (just check that the file is tabixed?) (FALSE)
+#' @param gen     what genome the file corresponds to (default is GRCm38)
+#' @param seqinf  add seqInfo? (leave FALSE if running behind a firewall) 
 #' @param ...     additional arguments to pass on to rtracklayer::import
 #'
 #' @return        a GRanges with appropriate seqinfo and scores turned to betas
@@ -14,7 +15,7 @@
 #' @import GenomicRanges
 #' 
 #' @export
-scanScNMT <- function(tsv, dry=FALSE, gen="GRCm38", ...) {
+scanScNMT <- function(tsv, dry=FALSE, gen="GRCm38", seqinf=FALSE, ...) {
 
   # tidy up the input filename 
   tsv <- sub("(\\.gz)+$", "", tsv)
@@ -47,11 +48,12 @@ scanScNMT <- function(tsv, dry=FALSE, gen="GRCm38", ...) {
     stopifnot(is(TabixFile(tsvgz), "TabixFile")) 
     message("OK.")
   } else { 
-    gr <- .addSeqinfo(import(TabixFile(tsvgz)), gen=gen)
+    gr <- import(TabixFile(tsvgz))
     names(mcols(gr))[1] <- "score"
     maxscore <- max(gr$score) # typically 0-100 in raw
     if (maxscore > 1) gr$score <- gr$score / maxscore
     names(gr) <- as.character(gr) # for merging
+    if (seqinf) gr <- .addSeqinfo(gr, gen=gen)
     return(gr) 
   }
 

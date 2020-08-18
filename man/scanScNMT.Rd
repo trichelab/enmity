@@ -4,7 +4,7 @@
 \alias{scanScNMT}
 \title{import an scNMT raw methylation file (chrom, start, \%meth)}
 \usage{
-scanScNMT(tsv, dry = FALSE, gen = "GRCm38", ...)
+scanScNMT(tsv, dry = FALSE, gen = "GRCm38", seqinf = FALSE, ...)
 }
 \arguments{
 \item{tsv}{a tsv or tsv.gz filename (will figure out what to do with it)}
@@ -12,6 +12,8 @@ scanScNMT(tsv, dry = FALSE, gen = "GRCm38", ...)
 \item{dry}{dry run? (just check that the file is tabixed?) (FALSE)}
 
 \item{gen}{what genome the file corresponds to (default is GRCm38)}
+
+\item{seqinf}{add seqInfo? (leave FALSE if running behind a firewall)}
 
 \item{...}{additional arguments to pass on to rtracklayer::import}
 }

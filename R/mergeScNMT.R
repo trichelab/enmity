@@ -4,12 +4,13 @@
 #' 
 #' @param tsvs    scNMT raw CpG (methylation) or GpC (accessibility) files 
 #' @param gen     what genome they correspond to (default is GRCm38)
-#' @param loci   a pre-merged GRanges with the union of all tsvs' ranges (NULL)
+#' @param loci    a pre-merged GRanges with the union of all tsvs' ranges (NULL)
 #' @param saveGR  save the intermediate `loci` object, if loci=NULL? (TRUE) 
 #' @param saveSE  save the intermediate `se` object before filling it? (FALSE) 
 #' @param HDF5    use an HDF5-backed SummarizedExperiment for loading? (FALSE)
 #' @param what    methylation ("meth") or accessibility ("acc") data? ("meth")
 #' @param dir     if using HDF5 and/or saving loci, path to use ("scNMT_"what)
+#' @param seqinf  add seqInfo? (TRUE; set FALSE if running behind a firewall) 
 #' @param BPPARAM BiocParallelParam object (default BiocParallel::SerialParam())
 #'
 #' @return        a SummarizedExperiment, perhaps HDF5-backed, with merged data
@@ -23,7 +24,7 @@
 #' @import bsseq
 #' 
 #' @export
-mergeScNMT <- function(tsvs, gen="GRCm38", loci=NULL, saveGR=TRUE, saveSE=FALSE, HDF5=FALSE, what=c("meth", "acc"), dir="scNMT", BPPARAM=SerialParam()) { 
+mergeScNMT <- function(tsvs, gen="GRCm38", loci=NULL, saveGR=TRUE, saveSE=FALSE, HDF5=FALSE, what=c("meth", "acc"), dir="scNMT", seqinf=TRUE, BPPARAM=SerialParam()) { 
 
   what <- match.arg(what) 
   dir <- paste(dir, what, sep="_") 
@@ -72,6 +73,10 @@ mergeScNMT <- function(tsvs, gen="GRCm38", loci=NULL, saveGR=TRUE, saveSE=FALSE,
     loci <- scNMTFileListToGr(tsvgzs, BPPARAM=BPPARAM)
     names(loci) <- as.character(loci) 
     metadata(loci)$files <- tsvgzs
+    if (seqinf) {
+      message("Adding seqinfo...")
+      loci <- .addSeqinfo(loci, gen=gen)
+    }
     message("Finished merging into `loci`.")
     if (saveGR) {
       if (!dir.exists(dir)) dir.create(dir)
@@ -201,6 +206,7 @@ scNMTFileListToGr <- function(tfl, BPPARAM=SerialParam(), verbose=TRUE) {
   grl <- GRangesList(grs)[order(sapply(grs, length), decreasing=TRUE)]
   if (verbose) message("Taking the union of ", length(grl), " indices...")
   Reduce(GenomicRanges::union, grl)
+
 
 }
 

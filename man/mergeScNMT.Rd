@@ -13,6 +13,7 @@ mergeScNMT(
   HDF5 = FALSE,
   what = c("meth", "acc"),
   dir = "scNMT",
+  seqinf = TRUE,
   BPPARAM = SerialParam()
 )
 }
@@ -32,6 +33,8 @@ mergeScNMT(
 \item{what}{methylation ("meth") or accessibility ("acc") data? ("meth")}
 
 \item{dir}{if using HDF5 and/or saving loci, path to use ("scNMT_"what)}
+
+\item{seqinf}{add seqInfo? (TRUE; set FALSE if running behind a firewall)}
 
 \item{BPPARAM}{BiocParallelParam object (default BiocParallel::SerialParam())}
 }
