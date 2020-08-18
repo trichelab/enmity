@@ -11,6 +11,7 @@
 #' @param what    methylation ("meth") or accessibility ("acc") data? ("meth")
 #' @param dir     if using HDF5 and/or saving loci, path to use ("scNMT_"what)
 #' @param seqinf  add seqInfo? (TRUE; set FALSE if running behind a firewall) 
+#' @param verbose be extra verbose? (FALSE) 
 #' @param BPPARAM BiocParallelParam object (default BiocParallel::SerialParam())
 #'
 #' @return        a SummarizedExperiment, perhaps HDF5-backed, with merged data
@@ -24,7 +25,7 @@
 #' @import bsseq
 #' 
 #' @export
-mergeScNMT <- function(tsvs, gen="GRCm38", loci=NULL, saveGR=TRUE, saveSE=FALSE, HDF5=FALSE, what=c("meth", "acc"), dir="scNMT", seqinf=TRUE, BPPARAM=SerialParam()) { 
+mergeScNMT <- function(tsvs, gen="GRCm38", loci=NULL, saveGR=TRUE, saveSE=FALSE, HDF5=FALSE, what=c("meth", "acc"), dir="scNMT", seqinf=TRUE, verbose=FALSE, BPPARAM=SerialParam()) { 
 
   what <- match.arg(what) 
   dir <- paste(dir, what, sep="_") 
@@ -39,6 +40,7 @@ mergeScNMT <- function(tsvs, gen="GRCm38", loci=NULL, saveGR=TRUE, saveSE=FALSE,
 
   # (try to) ensure TSVs are tabixed by dry-running scanScNMT
   if (is.null(loci)) { 
+    if (verbose) message("Cataloging loci...")
     indexed <- bptry(bplapply(X=tsvs, FUN=scanScNMT, dry=TRUE, BPPARAM=BPPARAM))
     if (!all(bpok(indexed))) { 
       # {{{ usually a fixable issue: the scNMT headers on GEO are fugged
@@ -70,7 +72,7 @@ mergeScNMT <- function(tsvs, gen="GRCm38", loci=NULL, saveGR=TRUE, saveSE=FALSE,
   if (is.null(loci)) {
     message("Constructing merged locus index `loci`.")
     # Pete suggests to try this with bpiterate instead?
-    loci <- scNMTFileListToGr(tsvgzs, BPPARAM=BPPARAM)
+    loci <- scNMTFileListToGr(tsvgzs, verbose=verbose, BPPARAM=BPPARAM)
     names(loci) <- as.character(loci) 
     metadata(loci)$files <- tsvgzs
     if (seqinf) {
@@ -145,6 +147,7 @@ mergeScNMT <- function(tsvs, gen="GRCm38", loci=NULL, saveGR=TRUE, saveSE=FALSE,
   }
 
   # read in the asy values from scNMT files
+  if (verbose) message("Reading in the assay data...")
   asy_dat <- bptry(bplapply(X = seq_along(grid),
                             FUN = .updateScNMT, 
                             files = tsvgzs,

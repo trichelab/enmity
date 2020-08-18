@@ -4,18 +4,18 @@
 #' @param dry     dry run? (just check that the file is tabixed?) (FALSE)
 #' @param gen     what genome the file corresponds to (default is GRCm38)
 #' @param seqinf  add seqInfo? (leave FALSE if running behind a firewall) 
+#' @param verbose be verbose? (FALSE) 
 #' @param ...     additional arguments to pass on to rtracklayer::import
 #'
 #' @return        a GRanges with appropriate seqinfo and scores turned to betas
 #' 
-#' @import R.utils
 #' @import Rsamtools
 #' @import rtracklayer
 #' @import GenomeInfoDb
 #' @import GenomicRanges
 #' 
 #' @export
-scanScNMT <- function(tsv, dry=FALSE, gen="GRCm38", seqinf=FALSE, ...) {
+scanScNMT <- function(tsv, dry=FALSE, gen="GRCm38", seqinf=FALSE, verbose=FALSE, ...) {
 
   # tidy up the input filename 
   tsv <- sub("(\\.gz)+$", "", tsv)
@@ -25,6 +25,7 @@ scanScNMT <- function(tsv, dry=FALSE, gen="GRCm38", seqinf=FALSE, ...) {
 
   # ensure it is bgzipped 
   tsvgz <- paste0(tsv, ".gz")
+  if (verbose) message("Checking for bgzipped ", tsvgz, "...")
   if (!file.exists(tsvgz)) {
     message("bgzipping...")
     stopifnot(file.exists(tsv))
@@ -33,6 +34,7 @@ scanScNMT <- function(tsv, dry=FALSE, gen="GRCm38", seqinf=FALSE, ...) {
   
   # ensure it is indexed 
   tsvtbi <- paste0(tsvgz, ".tbi")
+  if (verbose) message("Checking for index ", tsvtbi, "...")
   if (!file.exists(tsvtbi) ) {
     tsvtbi <- try(.indexScNMT(tsvgz, verbose=FALSE), silent=TRUE)
     if (inherits(tsvtbi, "try-error")) {
