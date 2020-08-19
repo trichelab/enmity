@@ -61,7 +61,8 @@ scNMTFileListToGR <- function(tfl, BPPARAM=SerialParam(), verbose=TRUE) {
   
   resultDir <- bpresultdir(BPPARAM)
   if (!is.na(resultDir)) {
-    resultFiles <- list.files(resultDir(patt="^BP.*Rda$"))
+    stopifnot(!dir.exists(resultDir))
+    resultFiles <- list.files(resultDir, patt="^BP.*Rda$")
     sapply(resultFiles, .loadBpFile, resultDir=resultDir)
   } 
 
