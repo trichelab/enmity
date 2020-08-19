@@ -69,10 +69,11 @@ mergeScNMT <- function(tsvs, gen="GRCm38", loci=NULL, saveGR=TRUE, saveSE=FALSE,
   names(tsvgzs) <- tsvnames
   
   # create a union'ed rowRanges for the se if not provided
+  # refactor this?
   if (is.null(loci)) {
     message("Constructing merged locus index `loci`.")
     # Pete suggests to try this with bpiterate instead?
-    loci <- scNMTFileListToGr(tsvgzs, verbose=verbose, BPPARAM=BPPARAM)
+    loci <- scNMTFileListToGR(tsvgzs, verbose=verbose, BPPARAM=BPPARAM)
     names(loci) <- as.character(loci) 
     metadata(loci)$files <- tsvgzs
     if (seqinf) {
@@ -126,6 +127,8 @@ mergeScNMT <- function(tsvs, gen="GRCm38", loci=NULL, saveGR=TRUE, saveSE=FALSE,
   message("Creating a DelayedArray for the data.")
 
   if (HDF5) {
+
+    message("Warning: HDF5 writes often crash under Singularity.") 
 
     if (!dir.exists(dir)) dir.create(dir) 
     h5_path <- file.path(dir, "assays.h5")
@@ -188,30 +191,6 @@ mergeScNMT <- function(tsvs, gen="GRCm38", loci=NULL, saveGR=TRUE, saveSE=FALSE,
   return(se)
 
 } 
-
-
-# utility fn, stolen from h5testR, more or less (quite different now) 
-scNMTFileListToGr <- function(tfl, BPPARAM=SerialParam(), verbose=TRUE) {
-
-  if (!is(tfl, "TabixFileList")) {
-    tfl <- try(TabixFileList(lapply(tfl, TabixFile)))
-    if (inherits(tfl, "try-error")) stop("Invalid tabix files; cannot proceed.")
-  }
-
-  if (verbose) message("Reading indices from ", length(tfl), " Tabix files...")
-  grs <- bptry(bplapply(X=tfl, FUN=scNMTtoGR, is0based=FALSE, BPPARAM=BPPARAM))
-
-  if (!all(bpok(grs))) {
-    stop("scNMTtoGR() encountered errors for these files:\n  ",
-         paste(sapply(tfl, path)[!bpok], collapse = "\n  "))
-  }
-
-  grl <- GRangesList(grs)[order(sapply(grs, length), decreasing=TRUE)]
-  if (verbose) message("Taking the union of ", length(grl), " indices...")
-  Reduce(GenomicRanges::union, grl)
-
-
-}
 
 
 # utility fn, stolen from bsseq, more or less

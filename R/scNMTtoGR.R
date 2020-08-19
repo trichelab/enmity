@@ -35,6 +35,8 @@ scNMTtoGR <- function(filename, verbose=TRUE, is0based=FALSE, ...) {
   tfdf$start <- as.integer(tfdf$start) # some GTFs have bogus start/end ranges
   tfdf$end <- as.integer(tfdf$end)     # so we coerce them here and then subset
   tfdf <- subset(tfdf, !is.na(seqnames) & !is.na(start) & !is.na(end))
-  makeGRangesFromDataFrame(tfdf, starts.in.df.are.0based=is0based)
+  gr <- makeGRangesFromDataFrame(tfdf, starts.in.df.are.0based=is0based)
+  metadata(gr)$filename <- filename
+  return(gr)
 
 }
