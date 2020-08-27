@@ -15,6 +15,7 @@ mergeScNMT(
   dir = "scNMT",
   seqinf = TRUE,
   verbose = FALSE,
+  which = NULL,
   BPPARAM = SerialParam()
 )
 }
@@ -38,6 +39,8 @@ mergeScNMT(
 \item{seqinf}{add seqInfo? (TRUE; set FALSE if running behind a firewall)}
 
 \item{verbose}{be extra verbose? (FALSE)}
+
+\item{which}{optional GRanges to restrict reading of coordinates (NULL)}
 
 \item{BPPARAM}{BiocParallelParam object (default BiocParallel::SerialParam())}
 }

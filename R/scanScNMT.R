@@ -5,6 +5,7 @@
 #' @param gen     what genome the file corresponds to (default is GRCm38)
 #' @param seqinf  add seqInfo? (leave FALSE if running behind a firewall) 
 #' @param verbose be verbose? (FALSE) 
+#' @param which   optional GRanges to restrict reading of coordinates (NULL)
 #' @param ...     additional arguments to pass on to rtracklayer::import
 #'
 #' @return        a GRanges with appropriate seqinfo and scores turned to betas
@@ -15,7 +16,7 @@
 #' @import GenomicRanges
 #' 
 #' @export
-scanScNMT <- function(tsv, dry=FALSE, gen="GRCm38", seqinf=FALSE, verbose=FALSE, ...) {
+scanScNMT <- function(tsv, dry=FALSE, gen="GRCm38", seqinf=FALSE, verbose=FALSE, which=NULL, ...) {
 
   if (verbose) message("Scanning ", tsv, "...")
   
@@ -52,7 +53,7 @@ scanScNMT <- function(tsv, dry=FALSE, gen="GRCm38", seqinf=FALSE, verbose=FALSE,
     stopifnot(is(TabixFile(tsvgz), "TabixFile")) 
     message("OK.")
   } else { 
-    gr <- import(TabixFile(tsvgz))
+    gr <- import(TabixFile(tsvgz), which=which)
     names(mcols(gr))[1] <- "score"
     maxscore <- max(gr$score) # typically 0-100 in raw
     if (maxscore > 1) gr$score <- gr$score / maxscore

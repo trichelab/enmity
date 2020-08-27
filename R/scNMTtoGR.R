@@ -5,6 +5,8 @@
 #' @param filename  the file 
 #' @param verbose   squawk? (TRUE) 
 #' @param is0based  is it a UCSC file? (FALSE) 
+#' @param which     Optional instance of 'GRanges' or 'IntegerRangesList' (NULL)
+#' @param ...       Optional arguments, currently ignored
 #' 
 #' @return          a GRanges with the tabix-derived coordinates, but no $score
 #' 
@@ -12,7 +14,7 @@
 #' @import GenomicRanges
 #' 
 #' @export
-scNMTtoGR <- function(filename, verbose=TRUE, is0based=FALSE, ...) {
+scNMTtoGR <- function(filename, verbose=TRUE, is0based=FALSE, which=NULL, ...) {
 
   tf <- Rsamtools::TabixFile(filename, ...)
   if (!file.exists(Rsamtools::index(tf))) stop("Your file lacks an index!")
@@ -35,7 +37,13 @@ scNMTtoGR <- function(filename, verbose=TRUE, is0based=FALSE, ...) {
   tfdf$start <- as.integer(tfdf$start) # some GTFs have bogus start/end ranges
   tfdf$end <- as.integer(tfdf$end)     # so we coerce them here and then subset
   tfdf <- subset(tfdf, !is.na(seqnames) & !is.na(start) & !is.na(end))
+  if (!is.null(which)) {
+    tfdf <- subset(tfdf, seqnames %in% unique(seqnames(which)))
+  }
   gr <- makeGRangesFromDataFrame(tfdf, starts.in.df.are.0based=is0based)
+  if (!is.null(which)) {
+    gr <- subsetByOverlaps(gr, which)
+  }
   metadata(gr)$filename <- filename
   return(gr)
 

@@ -12,6 +12,7 @@
 #' @param dir     if using HDF5 and/or saving loci, path to use ("scNMT_"what)
 #' @param seqinf  add seqInfo? (TRUE; set FALSE if running behind a firewall) 
 #' @param verbose be extra verbose? (FALSE) 
+#' @param which   optional GRanges to restrict reading of coordinates (NULL)
 #' @param BPPARAM BiocParallelParam object (default BiocParallel::SerialParam())
 #'
 #' @return        a SummarizedExperiment, perhaps HDF5-backed, with merged data
@@ -25,7 +26,7 @@
 #' @import bsseq
 #' 
 #' @export
-mergeScNMT <- function(tsvs, gen="GRCm38", loci=NULL, saveGR=TRUE, saveSE=FALSE, HDF5=FALSE, what=c("meth", "acc"), dir="scNMT", seqinf=TRUE, verbose=FALSE, BPPARAM=SerialParam()) { 
+mergeScNMT <- function(tsvs, gen="GRCm38", loci=NULL, saveGR=TRUE, saveSE=FALSE, HDF5=FALSE, what=c("meth", "acc"), dir="scNMT", seqinf=TRUE, verbose=FALSE, which=NULL, BPPARAM=SerialParam()) { 
 
   what <- match.arg(what) 
   dir <- paste(dir, what, sep="_") 
@@ -73,7 +74,8 @@ mergeScNMT <- function(tsvs, gen="GRCm38", loci=NULL, saveGR=TRUE, saveSE=FALSE,
   if (is.null(loci)) {
     message("Constructing merged locus index `loci`.")
     # Pete suggests to try this with bpiterate instead?
-    loci <- scNMTFileListToGR(tsvgzs, verbose=verbose, BPPARAM=BPPARAM)
+    loci <- scNMTFileListToGR(tsvgzs, verbose=verbose, 
+                              BPPARAM=BPPARAM, which=which)
     names(loci) <- as.character(loci) 
     metadata(loci)$files <- tsvgzs
     if (seqinf) {
@@ -194,11 +196,11 @@ mergeScNMT <- function(tsvs, gen="GRCm38", loci=NULL, saveGR=TRUE, saveSE=FALSE,
 
 
 # utility fn, stolen from bsseq, more or less
-.updateScNMT <- function(i, files, loci, grid, asy_sink, sink_lock, gen) {
+.updateScNMT <- function(i, files, loci, grid, asy_sink, sink_lock, gen, which=NULL) {
 
   message("[.updateScNMT] Extracting scores for ", names(files)[i])
   message("               from ", files[i])
-  gr <- scanScNMT(files[i], gen = gen)
+  gr <- scanScNMT(files[i], gen = gen, which=which)
   ol <- findOverlaps(gr, loci) # does this need to be `equal`?!
   asy_dat <- matrix(rep(NA_real_, length(loci)), ncol = 1)
   asy_dat[subjectHits(ol)] <- score(gr[queryHits(ol)])

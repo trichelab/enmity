@@ -10,6 +10,7 @@ scanScNMT(
   gen = "GRCm38",
   seqinf = FALSE,
   verbose = FALSE,
+  which = NULL,
   ...
 )
 }
@@ -23,6 +24,8 @@ scanScNMT(
 \item{seqinf}{add seqInfo? (leave FALSE if running behind a firewall)}
 
 \item{verbose}{be verbose? (FALSE)}
+
+\item{which}{optional GRanges to restrict reading of coordinates (NULL)}
 
 \item{...}{additional arguments to pass on to rtracklayer::import}
 }

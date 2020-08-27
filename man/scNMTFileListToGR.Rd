@@ -4,12 +4,14 @@
 \alias{scNMTFileListToGR}
 \title{somewhat of an evolved version of tabixToGR with checkpointing}
 \usage{
-scNMTFileListToGR(tfl, BPPARAM = SerialParam(), verbose = TRUE)
+scNMTFileListToGR(tfl, BPPARAM = SerialParam(), which = NULL, verbose = TRUE)
 }
 \arguments{
 \item{tfl}{a TabixFileList or something that can become one}
 
 \item{BPPARAM}{BiocParallel parameters (default is SerialParam())}
+
+\item{which}{optional GRanges to restrict reading of coordinates (NULL)}
 
 \item{verbose}{be verbose? (TRUE)}
 }
@@ -18,5 +20,5 @@ scNMTFileListToGR(tfl, BPPARAM = SerialParam(), verbose = TRUE)
 }
 }
 \description{
-somewhat of an evolved version of tabixToGR with checkpointing
+Note that the parameter \code{which} behaves as with scanBamParam() or import().
 }

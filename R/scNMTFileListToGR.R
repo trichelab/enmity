@@ -1,7 +1,10 @@
 #' somewhat of an evolved version of tabixToGR with checkpointing
 #' 
+#' Note that the parameter `which` behaves as with scanBamParam() or import(). 
+#' 
 #' @param tfl       a TabixFileList or something that can become one
 #' @param BPPARAM   BiocParallel parameters (default is SerialParam())
+#' @param which     optional GRanges to restrict reading of coordinates (NULL)
 #' @param verbose   be verbose? (TRUE) 
 #' 
 #' @return          a GRanges
@@ -10,7 +13,7 @@
 #' @import GenomicRanges
 #' 
 #' @export
-scNMTFileListToGR <- function(tfl, BPPARAM=SerialParam(), verbose=TRUE) {
+scNMTFileListToGR <- function(tfl, BPPARAM=SerialParam(), which=NULL, verbose=TRUE) {
 
   # sanity checking per usual 
   if (!is(tfl, "TabixFileList")) {
@@ -27,7 +30,7 @@ scNMTFileListToGR <- function(tfl, BPPARAM=SerialParam(), verbose=TRUE) {
 
   # ok now let's get to work 
   if (verbose) message("Reading indices from ", length(tfl), " Tabix files...")
-  grs <- bptry(bplapply(X=tfl, FUN=scNMTtoGR, BPPARAM=BPPARAM))
+  grs <- bptry(bplapply(X=tfl, FUN=scNMTtoGR, BPPARAM=BPPARAM, which=which))
   if (!all(bpok(grs))) {
     stop("scNMTtoGR() encountered errors for these files:\n  ",
          paste(sapply(tfl, path)[!bpok], collapse = "\n  "))
@@ -72,6 +75,6 @@ scNMTFileListToGR <- function(tfl, BPPARAM=SerialParam(), verbose=TRUE) {
 # load one BiocParallel saved result
 .loadBpFile <- function(resultFile, resultDir) {
   
-  if (!is.na(resultDir)) load(file.path(resultDir, resultFile))
+  if (!is.na(resultDir)) get(load(file.path(resultDir, resultFile)))
 
 }

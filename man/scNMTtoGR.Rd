@@ -4,7 +4,7 @@
 \alias{scNMTtoGR}
 \title{take an scNMT CpG methylation file and read its coordinates into a GRanges}
 \usage{
-scNMTtoGR(filename, verbose = TRUE, is0based = FALSE, ...)
+scNMTtoGR(filename, verbose = TRUE, is0based = FALSE, which = NULL, ...)
 }
 \arguments{
 \item{filename}{the file}
@@ -12,6 +12,10 @@ scNMTtoGR(filename, verbose = TRUE, is0based = FALSE, ...)
 \item{verbose}{squawk? (TRUE)}
 
 \item{is0based}{is it a UCSC file? (FALSE)}
+
+\item{which}{Optional instance of 'GRanges' or 'IntegerRangesList' (NULL)}
+
+\item{...}{Optional arguments, currently ignored}
 }
 \value{
 \preformatted{     a GRanges with the tabix-derived coordinates, but no $score
