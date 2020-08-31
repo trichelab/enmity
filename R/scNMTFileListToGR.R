@@ -64,7 +64,7 @@ scNMTFileListToGR <- function(tfl, BPPARAM=SerialParam(), which=NULL, verbose=TR
   
   resultDir <- bpresultdir(BPPARAM)
   if (!is.na(resultDir)) {
-    stopifnot(!dir.exists(resultDir))
+    stopifnot(dir.exists(resultDir))
     resultFiles <- list.files(resultDir, patt="^BP.*Rda$")
     sapply(resultFiles, .loadBpFile, resultDir=resultDir)
   } 
@@ -75,6 +75,8 @@ scNMTFileListToGR <- function(tfl, BPPARAM=SerialParam(), which=NULL, verbose=TR
 # load one BiocParallel saved result
 .loadBpFile <- function(resultFile, resultDir) {
   
-  if (!is.na(resultDir)) get(load(file.path(resultDir, resultFile)))
+  if (!is.na(resultDir) & dir.exists(resultDir)) {
+    get(load(file.path(resultDir, resultFile)))
+  }
 
 }

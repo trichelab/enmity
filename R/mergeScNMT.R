@@ -127,6 +127,7 @@ mergeScNMT <- function(tsvs, gen="GRCm38", loci=NULL, saveGR=TRUE, saveSE=FALSE,
   grid <- RegularArrayGrid(refdim = ans_dim, spacings = c(ans_nrow, 1L))
   DelayedArray:::set_verbose_block_processing(TRUE)
   message("Creating a DelayedArray for the data.")
+  resultDir <- bpresultdir(BPPARAM) # if saving
 
   if (HDF5) {
 
@@ -160,6 +161,7 @@ mergeScNMT <- function(tsvs, gen="GRCm38", loci=NULL, saveGR=TRUE, saveSE=FALSE,
                             grid = grid,
                             asy_sink = asy_sink,
                             sink_lock = sink_lock,
+                            result_dir = resultDir,
                             gen = gen, 
                             BPPARAM = BPPARAM))
 
@@ -168,6 +170,15 @@ mergeScNMT <- function(tsvs, gen="GRCm38", loci=NULL, saveGR=TRUE, saveSE=FALSE,
     stop(".updateScNMT() encountered errors for these files:\n  ",
          paste(files[!bpok], collapse = "\n  "))
   }
+
+  # are the results saved?  Load them first, if so.
+  if (!is.na(resultDir)) {
+    if (verbose) message("Loading saved results from ", resultDir)
+    asy_dat <- .loadBpFiles(BPPARAM)
+    if (verbose) browser() # check naming
+    if (verbose) message("OK.")
+  }
+
   
   # write 'em  
   if (HDF5) {
@@ -196,21 +207,25 @@ mergeScNMT <- function(tsvs, gen="GRCm38", loci=NULL, saveGR=TRUE, saveSE=FALSE,
 
 
 # utility fn, stolen from bsseq, more or less
-.updateScNMT <- function(i, files, loci, grid, asy_sink, sink_lock, gen, which=NULL) {
+.updateScNMT <- function(i, files, loci, grid, asy_sink, sink_lock, gen, result_dir=NULL, which=NULL) {
 
+  if (!is.null(result_dir)) stopifnot(!is.null(names(files))) # need names
   message("[.updateScNMT] Extracting scores for ", names(files)[i])
   message("               from ", files[i])
   gr <- scanScNMT(files[i], gen = gen, which=which)
   ol <- findOverlaps(gr, loci) # does this need to be `equal`?!
   asy_dat <- matrix(rep(NA_real_, length(loci)), ncol = 1)
   asy_dat[subjectHits(ol)] <- score(gr[queryHits(ol)])
-  if (is.null(asy_sink)) return(asy_dat) # in-memory 
+  attr(asy_dat, "name") <- names(files)[i]  
+  attr(asy_dat, "file") <- files[i]
+  if (is.null(asy_sink)) return(asy_dat) # in-memory, perhaps saved
+
   message("[.updateScNMT] Locking and writing DelayedArray...")
   viewport <- grid[[i]] # HDF5 or similar backend
   ipclock(sink_lock) # respect locking 
   write_block(x = asy_sink, viewport = viewport, block = asy_dat)
   ipcunlock(sink_lock) # respect locking
   message("               Written and unlocked.")
-  NULL
+  return(NULL)
 
 }
