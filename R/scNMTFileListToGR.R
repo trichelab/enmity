@@ -40,7 +40,7 @@ scNMTFileListToGR <- function(tfl, BPPARAM=SerialParam(), which=NULL, verbose=TR
   resultDir <- bpresultdir(BPPARAM)
   if (!is.na(resultDir)) {
     if (verbose) message("Loading saved results from ", resultDir)
-    grs <- .loadBpFiles(BPPARAM)
+    grs <- loadBpFiles(BPPARAM)
     if (verbose) message("OK.")
   }
 
@@ -55,28 +55,5 @@ scNMTFileListToGR <- function(tfl, BPPARAM=SerialParam(), which=NULL, verbose=TR
   res <- Reduce(GenomicRanges::union, grl)
   metadata(res)$filenames <- filenames
   return(res)
-
-}
-
-
-# load results of BiocParallel jobs when !is.na(bpresultdir(BPPARAM))
-.loadBpFiles <- function(BPPARAM) {
-  
-  resultDir <- bpresultdir(BPPARAM)
-  if (!is.na(resultDir)) {
-    stopifnot(dir.exists(resultDir))
-    resultFiles <- list.files(resultDir, patt="^BP.*Rda$")
-    sapply(resultFiles, .loadBpFile, resultDir=resultDir)
-  } 
-
-}
-
-
-# load one BiocParallel saved result
-.loadBpFile <- function(resultFile, resultDir) {
-  
-  if (!is.na(resultDir) & dir.exists(resultDir)) {
-    get(load(file.path(resultDir, resultFile)))
-  }
 
 }

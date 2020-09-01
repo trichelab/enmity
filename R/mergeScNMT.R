@@ -174,8 +174,7 @@ mergeScNMT <- function(tsvs, gen="GRCm38", loci=NULL, saveGR=TRUE, saveSE=FALSE,
   # are the results saved?  Load them first, if so.
   if (!is.na(resultDir)) {
     if (verbose) message("Loading saved results from ", resultDir)
-    asy_dat <- .loadBpFiles(BPPARAM)
-    if (verbose) browser() # check naming
+    asy_dat <- loadBpFiles(BPPARAM, simplify=TRUE) # may hose HDF5 ?
     if (verbose) message("OK.")
   }
 

@@ -3,6 +3,7 @@
 export()
 export(LCS)
 export(iso_apply)
+export(loadBpFiles)
 export(mergeScNMT)
 export(scNMTFileListToGR)
 export(scNMTtoGR)
