@@ -1,7 +1,7 @@
 #' load results of BiocParallel jobs when !is.na(bpresultdir(BPPARAM))
 #' 
 #' @param   BPPARAM   a subclass of SnowParam (e.g. SerialParam, MulticoreParam)
-#' @param   simplify  if a list of vectors is found, cbind them? (TRUE) 
+#' @param   simplify  if a list of equal sized arrays is found, cbind it? (TRUE)
 #' 
 #' @return            whatever is in the result directory, tidied up if possible
 #' 
@@ -46,20 +46,24 @@ loadBpFiles <- function(BPPARAM, simplify=TRUE) {
 
 
 # see if a list value has name attributes for cbinding etc. 
-.attrnames <- function(x) names(attributes(x))
-
+.attrnames <- function(x) {
+  names(attributes(x))
+}
 
 # see if an object has an attribute 
-.hasattr <- function(x, y="name") return(y %in% .attrnames(x))
-
-
-# common case
-.hasnames <- function(x) all(sapply(x, .hasattr, "name"))
-
+.hasattr <- function(x, y="name") {
+  return(y %in% .attrnames(x))
+}
 
 # common case
-.getnames <- function(x) sapply(x, attr, "name") 
+.hasnames <- function(x) {
+  all(sapply(x, .hasattr, "name"))
+}
 
+# common case
+.getnames <- function(x) {
+  sapply(x, attr, "name") 
+}
 
 # see if all the items in a list have the same number of rows 
 .equalrows <- function(res) {
@@ -76,4 +80,6 @@ loadBpFiles <- function(BPPARAM, simplify=TRUE) {
 
 
 # result directory exists? 
-.checkResultDir <- function(resultDir) !is.na(resultDir) & dir.exists(resultDir)
+.checkResultDir <- function(resultDir) {
+  !is.na(resultDir) & dir.exists(resultDir)
+}

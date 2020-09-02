@@ -9,7 +9,7 @@ loadBpFiles(BPPARAM, simplify = TRUE)
 \arguments{
 \item{BPPARAM}{a subclass of SnowParam (e.g. SerialParam, MulticoreParam)}
 
-\item{simplify}{if a list of vectors is found, cbind them? (TRUE)}
+\item{simplify}{if a list of equal sized arrays is found, cbind it? (TRUE)}
 }
 \value{
 \preformatted{       whatever is in the result directory, tidied up if possible

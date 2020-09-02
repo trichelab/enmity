@@ -176,9 +176,10 @@ mergeScNMT <- function(tsvs, gen="GRCm38", loci=NULL, saveGR=TRUE, saveSE=FALSE,
     if (verbose) message("Loading saved results from ", resultDir)
     asy_dat <- loadBpFiles(BPPARAM, simplify=TRUE) # may hose HDF5 ?
     if (verbose) message("OK.")
+  } else { 
+
   }
 
-  
   # write 'em  
   if (HDF5) {
 
@@ -190,11 +191,21 @@ mergeScNMT <- function(tsvs, gen="GRCm38", loci=NULL, saveGR=TRUE, saveSE=FALSE,
     saveRDS(x, file = file.path(dir, "se.rds"))
 
   } else { 
-    
-    asy_dat <- Reduce(cbind, asy_dat)
-    stopifnot(identical(attr(asy_dat, "dim"), ans_dim))
+   
+    # already simplified if coming from checkpointed files  
+    if (is.list(asy_dat)) asy_dat <- Reduce(cbind, asy_dat)
+    if (!identical(attr(asy_dat, "dim"), ans_dim)) {
+      message("Problem: dim(asy_dat) != ans_dim")
+      if (verbose) browser()
+      else stop("Aborting.")
+    }
     rownames(asy_dat) <- names(loci)
-    colnames(asy_dat) <- colnames(se)
+    if (is.null(colnames(asy_dat))) {
+      colnames(asy_dat) <- colnames(se)
+    } else {
+      # in case checkpointing is screwy
+      asy_dat <- asy_dat[, colnames(se)] 
+    }
     assay(se, asy) <- asy_dat
 
   } 
